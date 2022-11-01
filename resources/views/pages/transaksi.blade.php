@@ -30,20 +30,10 @@
                         <td colspan="3">
                             <form action="{{ url()->current() }} " method="get">
                                 <div class="form-group">
-                                    {{-- <label for="search" class="d-block">Cari</label> --}}
                                     <input type="text" name="search" id="search" value="{{request('search')}} " placeholder="Cari ..." class="form-control form-control-sm">
                                 </div>
                             </form>
-                            {{-- <form action="{{ url()->current() }}"
-                                method="get">
-                                <div class="relative mx-auto">
-                                <input type="search"
-                                    name="search"
-                                    value="{{ request('search') }}"
-                                    placeholder="Search ....."
-                                    class="block w-full pl-4 pr-10 text-sm leading-5 transition rounded-full shadow-sm border-secondary-300 bg-secondary-50 focus:bg-white focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                                </div>
-                            </form> --}}
+                        
                         </td>
                     </tr>
                     <tr>
@@ -60,13 +50,14 @@
                 </thead>
                 <tbody>
 
-                    {{-- {{dd($transaksi) }} --}}
+                    
                     @if ($transaksi->count() > 0)
                     
-                    @foreach ($transaksi as $item)
+                    @foreach ($transaksi as $key => $item)
 
                     <tr>
-                        <td>{{ $transaksi->count() * ($transaksi->currentPage() - 1) + $loop->iteration }}</td>
+                        {{-- <td>{{ $transaksi->count() * ($transaksi->currentPage() - 1) + $loop->iteration }}</td> --}}
+                        <td>{{$key+1}} </td>
                         <td> {{$item->kode}} </td>
                         <td> {{ Carbon\Carbon::parse($item->tgl)->format('d-M-Y')}} </td>
                         <td> {{$item->name}} </td>
@@ -86,6 +77,11 @@
                         <td class="px-6 py-3 leading-4 whitespace-nowrap">-</td>
                         <td class="px-6 py-3 leading-4 whitespace-nowrap">-</td>
                         <td class="px-6 text-right whitespace-nowrap">-</td>
+                        <td class="px-6 py-3 text-center whitespace-nowrap">-</td>
+                        <td class="px-6 py-3 whitespace-nowrap">-</td>
+                        <td class="px-6 py-3 whitespace-nowrap">-</td>
+                        <td class="px-6 text-right whitespace-nowrap">-</td>
+                        <td class="px-6 text-right whitespace-nowrap">-</td>
                     </tr>
                         
                     @endif
@@ -99,13 +95,13 @@
                         <td></td>
                         <td></td>
                         <th colspan="4" class="table-active text-center" style="align-item:right">Grand Total</th>
-                        <th id="grand_total"></th>
+                        <th id="grand_total" class="text-end">@currency($grand_total) </th>
                     </tr>
                 </tfoot>
             </table>
-            <div class="text-gray-600 bg-secondary-50">
+            {{-- <div class="text-gray-600 bg-secondary-50" width=10%>
                 {{ $transaksi->links() }}
-            </div>
+            </div> --}}
         </div>
     </div>
 

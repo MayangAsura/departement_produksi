@@ -35,18 +35,24 @@ class TransaksiController extends Controller
                                 ->orWhere('diskon', 'like', '%'.$key. '%')
                                 ->orWhere('ongkir', 'like', '%'.$key. '%')
                                 ->orWhere('total_bayar', 'like', '%'.$key. '%')
-                                ->paginate(5);
+                                ->get();
+                                // ->paginate(5);
 
-        // $transaksi->tgl->format('d-M-Y');
-        // dd($transaksi);
+        // $transaksi->appends($request->only('search'));
 
-
-        $transaksi->appends($request->only('search'));
+        $grand_total = 0;
+        if($transaksi){
+            foreach ($transaksi as $key => $value) {
+                $grand_total += $value->total_bayar;
+            }
+        }
 
         return view('pages.transaksi', [
             'title'    => 'Transaksi',
             'transaksi' => $transaksi,
-        ])->with('i', ($request->input('page', 1) - 1) * $pagination);
+            'grand_total' => $grand_total
+        ]);
+        // ->with('i', ($request->input('page', 1) - 1) * $pagination);
 
 
     }
@@ -86,49 +92,41 @@ class TransaksiController extends Controller
 
         if($validator->fails()){
             return response()->json($validator->errors(), 200);
-        }
 
-        // dd($this->code());
+        }else{
 
-        $data_sales = [
-            'kode'      => $this->get_code(),
-            'tgl'       => $request->tgl,
-            'cust_id'   => Customer::where('kode', $request->kode_c)->first()->id,
-            // 'name'      => $request->name,
-            'jumlah'    => $request->jumlah,
-            'subtotal'  => $request->subtotal,
-            'diskon'    => $request->diskon?$request->diskon:0,
-            'ongkir'    => $request->ongkir,
-            'total_bayar' => $request->total_bayar
-        ];
-
-        $sales = Transaksi::create($data_sales);
-        
-        foreach ($request->barang as $key => $value) {
-            // dd($value. ' - '. $key);
-            $data_sales_det = [
-                'sales_id'  => $sales->id,
-                'barang_id' => $request->barang['kode'],
-                'harga_bandrol' => $request->barang['harga'],
-                'qty' => $request->barang['qty'],
-                'diskon_pct' => $request->barang['diskon_pct'],
-                'diskon_nilai' => $request->barang['diskon_nilai'],
-                'harga_diskon' => $request->barang['harga_diskon'],
-                'total' => $request->barang['total']
+            $data_sales = [
+                'kode'      => TransaksiController::get_code(),
+                'tgl'       => $request->tgl,
+                'cust_id'   => Customer::where('kode', $request->kode_c)->first()->id,
+                'jumlah'    => $request->jumlah,
+                'subtotal'  => $request->subtotal,
+                'diskon'    => $request->diskon?$request->diskon:0,
+                'ongkir'    => $request->ongkir,
+                'total_bayar' => $request->total_bayar
             ];
-
-            TransaksiDetail::create($data_sales_det);
+    
+            $sales = Transaksi::create($data_sales);
+            
+            foreach ($request->barang as $key => $value) {
+                
+                $data_sales_det = [
+                    'sales_id'  => $sales->id,
+                    'barang_id' => Barang::where('kode', $value['kode'])->first()->id,
+                    'harga_bandrol' => $value['harga'],
+                    'qty' => $value['qty'],
+                    'diskon_pct' => $value['diskon_pct'],
+                    'diskon_nilai' => $value['diskon_nilai'],
+                    'harga_diskon' => $value['harga_diskon'],
+                    'total' => $value['total']
+                ];
+    
+                TransaksiDetail::create($data_sales_det);
+            }
+    
+    
+            return response()->json(['code' => 200, 'msg' => 'Data berhasil ditambahkan!']);
         }
-
-
-        return back();
-
-        // return response()->json([
-        //     'kode' => $request->kode,
-        //     'tgl' => $request->tgl,
-        //     'name' => $request->name,
-        //     'barang' => $request->barang
-        // ]);
         
     }
 
@@ -138,17 +136,13 @@ class TransaksiController extends Controller
 
         $format = date('Ym-');
         $seq = "0000";
-        // $last_code = Transaksi::selectRaw('kode')
-        $last_code = Transaksi::select(DB::raw('MAX(kode) as last_code'))
-        ->havingRaw("YEAR('created_at') = " . date('Y') . " AND MONTH('created_at') = " . date('m') . " AND 'kode' LIKE '$format%'")
-        ->orderBy('created_at','desc')
-        ->groupByRaw('YEAR("created_at")')
-        ->first();
-        // $last_code = DB::select("SELECT MAX(kode) as last_code, id from t_sales where YEAR(created_at) = " . date('Y') . " AND MONTH(created_at) = " . date('m') . " AND kode LIKE ".$format."% group by id order by created_at desc ");
-        
+
+        $last_code = DB::select("SELECT MAX(kode) as last_code from t_sales where YEAR(created_at) = " . date('Y') . " AND MONTH(created_at) = " . date('m') . " AND kode LIKE '$format%' GROUP BY YEAR(created_at) order by created_at desc");
+
+        $last_code = $last_code==[]? "" : $last_code[0]->last_code;
         // dd($last_code);
         // ->where("YEAR(created_at) = " . date('Y') . " AND MONTH(created_at) = " . date('m') . " AND kode LIKE '$format%'")
-        $last = $last_code && strlen($last_code) == strlen($format . $seq) ? $last_code->last_code: $format . $seq;
+        $last = $last_code && strlen($last_code) == strlen($format . $seq) ? $last_code: $format . $seq;
         
         $start = strlen($last) - strlen($seq);
         $num = substr($last, $start) + 1;
@@ -156,10 +150,9 @@ class TransaksiController extends Controller
         $code = substr_replace($last, $new_seq, $start);
 
         $check = Transaksi::where('kode', $code)->first();
-        dd($last .' ' .$code . ' '.$check);
         
         if ($check) {
-        $code = $this->get_code();
+        $code = TransaksiController::get_code();
         }
         return $code;
             

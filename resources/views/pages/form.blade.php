@@ -292,20 +292,36 @@
                     dataType : 'json',
                     success : function(result){
 
-                        var ul = '<ul>'
+                        if(result['code']==200){
 
-                        for (let msg in result) {
-                            // console.log(result + ": "+ result[msg][0])
-                            ul+='<li>'+result[msg][0]+'</li>'
+                            $('#message').addClass('alert').addClass('alert-info')
+                            $('#message').html('<span>'+result['msg']+'</span>');
+                        }else{
+
+                            var ul = '<ul>'
+    
+                            for (let msg in result) {
+                                // console.log(result + ": "+ result[msg][0])
+                                ul+='<li>'+result[msg][0]+'</li>'
+                            }
+                            
+                            ul+= '</ul>'
+                            $('#message').addClass('alert').addClass('alert-danger')
+                            $('#message').html(ul);
                         }
-                        
-                        ul+= '</ul>'
-                        $('#error-message').addClass('alert').addClass('alert-danger')
-                        $('#error-message').html(ul);
+
+                        reset()
+
                         
                     }
                     
                 });
+
+                $(document).on('click' ,'#batal', function(){
+
+                    alert('masuk')
+                    reset()
+                })
 
                 console.log(data)
 
@@ -328,6 +344,18 @@
 
             $('#subtotal').val(rupiah(subtotal_))
             $('#total_bayar').val(rupiah(total_bayar_))
+        }
+
+        function reset() {
+            
+            $("tbody.barangs").remove()
+            $('#kode_c').val('')
+            $('#name').val('')
+            $('#telp').val('')
+            $('#subtotal').val('')
+            $('#diskon').val('')
+            $('#ongkir').val('')
+            $('#total_bayar').val('')
         }
         
         $('#diskon_pct_m').on('keyup', function(){
@@ -407,7 +435,7 @@
     <div class="row">
         <div class="col-12">
             {{-- menampilkan error validasi --}}
-            <div id="error-message">
+            <div id="message">
             </div>
             @if ($errors->any())
             <div class="alert alert-danger">

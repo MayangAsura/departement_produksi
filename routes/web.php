@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\TransaksiController;
+use App\Models\Transaksi;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [TransaksiController::class, 'index']);
 Route::get('/form-input', [TransaksiController::class, 'form_input']);
 Route::get('/autocomplete_cust', [CustomerController::class, 'get_autocomplete_cust'])->name('autocomplete_cust');
+Route::post('/saveTransaksi', [TransaksiController::class, 'save_transaksi'])->name('saveTransaksi');
 // Route::get('/search', [TransaksiController::class, 'search'])->name('search');
 
 // Route::get('/', function () {

@@ -51,15 +51,16 @@
                         <th>No. Transaksi</th>
                         <th>Tanggal</th>
                         <th>Nama Customer</th>
-                        <th>Jumlah Barang</th>
-                        <th>Sub Total</th>
-                        <th>Diskon</th>
-                        <th>Ongkir</th>
-                        <th>Total</th>
+                        <th class="text-end">Jumlah Barang</th>
+                        <th class="text-end">Sub Total</th>
+                        <th class="text-end">Diskon</th>
+                        <th class="text-end">Ongkir</th>
+                        <th class="text-end">Total</th>
                     </tr>
                 </thead>
                 <tbody>
 
+                    {{-- {{dd($transaksi) }} --}}
                     @if ($transaksi->count() > 0)
                     
                     @foreach ($transaksi as $item)
@@ -67,13 +68,13 @@
                     <tr>
                         <td>{{ $transaksi->count() * ($transaksi->currentPage() - 1) + $loop->iteration }}</td>
                         <td> {{$item->kode}} </td>
-                        <td> {{$item->tgl}} </td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td> {{ Carbon\Carbon::parse($item->tgl)->format('d-M-Y')}} </td>
+                        <td> {{$item->name}} </td>
+                        <td class="text-end"> {{$item->jumlah}} </td>
+                        <td class="text-end"> @currency($item->subtotal) </td>
+                        <td class="text-end"> {{$item->diskon}}</td>
+                        <td class="text-end"> @currency($item->ongkir)</td>
+                        <td class="text-end"> @currency($item->total_bayar)</td>
                     </tr>
                         
                     @endforeach

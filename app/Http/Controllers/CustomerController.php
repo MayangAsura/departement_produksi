@@ -7,8 +7,6 @@ use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
-    
-    protected $fillable = ['kode', 'name', 'telp', 'status'];
     public function get_autocomplete_cust(){
         
         if (isset($_GET['term'])) {

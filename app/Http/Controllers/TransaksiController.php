@@ -79,7 +79,7 @@ class TransaksiController extends Controller
         //     'total_bayar' => ['required', 'numeric'],
     	// ]);
 
-        // dd($validate);
+        // dd($request);
 
         $validator = Validator::make($request->all(), [
             'kode_c'    => 'required', //kode customer

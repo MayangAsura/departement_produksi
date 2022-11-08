@@ -20,7 +20,7 @@
     <script>
 
         
-        let jumlah = 0
+        // let jumlah = 0
         $(document).ready(function(){
             
             $('#btn_kode').click(function(){
@@ -271,7 +271,8 @@
           
             $(document).on('click', '#simpan', function(){
                 console.log(data)
-
+                console.log($('#diskon').val())
+                console.log($('#ongkir').val())
                 $.ajax({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -279,13 +280,13 @@
                     url : "{{ url('saveTransaksi') }}",
                     data : {
                         'barang' : data, 
-                        'jumlah' : jumlah,
+                        'jumlah' : cleaning($('#jumlah').val()),
                         'tgl' : $('#tgl').val(), 
                         'kode_c' : $('#kode_c').val(),
                         'name' : $('#name').val(),
                         'subtotal' : cleaning($('#subtotal').val()),
-                        'diskon' : cleaning($('#diskon').val()),
-                        'ongkir' : cleaning($('#ongkir').val()),
+                        'diskon' : $('#diskon').val(),
+                        'ongkir' : $('#ongkir').val(),
                         'total_bayar' : cleaning($('#total_bayar').val()),
                     },
                     type : 'POST',
@@ -311,21 +312,20 @@
                         }
 
                         reset()
-
                         
                     }
                     
                 });
-
-                $(document).on('click' ,'#batal', function(){
-
-                    alert('masuk')
-                    reset()
-                })
-
-                console.log(data)
-
+                
             })
+
+            $(document).on('click' ,'#batal', function(){
+
+                // alert('masuk')
+                reset()
+            })
+
+            console.log(data)
 
         });
         
@@ -334,24 +334,29 @@
             let subtotal_ = 0
             let diskon = $('#diskon').val() ==""? 0 : $('#diskon').val()
             let ongkir = $('#ongkir').val() ==""? 0 : $('#ongkir').val()
+            let jumlah_ = 0
 
             data.map(d => {
                 subtotal_ += d.total
-                jumlah += d.qty
+                jumlah_ += parseInt(d.qty)
             });
+
+            console.log('Jumlah : ' + jumlah_)
 
             let total_bayar_ = (subtotal_ - diskon) + parseInt(ongkir)
 
+            $('#jumlah').val(rupiah(jumlah_))
             $('#subtotal').val(rupiah(subtotal_))
             $('#total_bayar').val(rupiah(total_bayar_))
         }
 
         function reset() {
             
-            $("tbody.barangs").remove()
+            $("tbody.barangs").children().remove()
             $('#kode_c').val('')
             $('#name').val('')
             $('#telp').val('')
+            $('#jumlah').val('')
             $('#subtotal').val('')
             $('#diskon').val('')
             $('#ongkir').val('')
@@ -544,6 +549,7 @@
                             <th colspan="2" class="table-active text-end">Sub Total</th>
                             <td>
                                 <input type="text" name="subtotal" id="subtotal" value="{{old('subtotal')}}" class="form-control form-control-sm" disabled>
+                                <input type="hidden" name="jumlah" id="jumlah" class="form-control form-control-sm">
                             </td>
                             {{-- <th id="subtotal"></th> --}}
                         </tr>
